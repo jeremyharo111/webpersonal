@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jeremy Haro</title>
+
+    <!-- googlefonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- fontawesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <!-- header section -->
+    <header id="header">
+      <div class="left-section">
+        <a class="logo" href="#">Web personal</a>
+      </div>
+
+      <nav>
+        <a class="nav-item active" href="#">Inicio</a>
+        <a class="nav-item" href="#">Servicios</a>
+        <a class="nav-item" href="#">Proyectos</a>
+        <a class="nav-item" href="#">Contacto</a>
+      </nav>
+    </header>
+
+    <!-- Hero section -->
+    <section id="hero">
+      <div class="hero-left">
+        <div class="content">
+          <h1>Hola, soy Jeremy Haro</h1>
+          <h3>Desarrollador Frontend</h3>
+          <p>
+            Soy un desarrollador frontend apasionado por crear experiencias
+            digitales intuitivas y atractivas. Con un enfoque en diseño limpio y
+            tecnologías web modernas, ayudo a marcas y empresas a transformar su
+            presencia en línea. Si buscas renovar tu sitio actual o construir
+            algo desde cero, estoy aquí para dar vida a tus ideas. ¡Creemos algo
+            increíble juntos!
+          </p>
+
+          <div class="cta">
+            <button class="cta-1">Contrátame</button>
+            <button class="cta-2">Contáctame</button>
+          </div>
+
+          <div class="calculator-wrapper">
+            <h4 class="calculator-title">Calculadora con PHP</h4>
+            <div class="calculator">
+              <div class="display">
+                <div class="previous-operand"></div>
+                <div class="current-operand">0</div>
+              </div>
+              <!-- Row 1 -->
+              <button class="btn-op red" onclick="clearDisplay()">C</button>
+              <button class="btn-op green" onclick="appendOperator('/')">
+                ÷
+              </button>
+              <button class="btn-op green" onclick="appendOperator('*')">
+                ×
+              </button>
+              <button class="btn-op green" onclick="deleteLast()">
+                <i class="fas fa-backspace"></i>
+              </button>
+              <!-- Row 2 -->
+              <button onclick="appendNumber('7')">7</button>
+              <button onclick="appendNumber('8')">8</button>
+              <button onclick="appendNumber('9')">9</button>
+              <button class="btn-op green" onclick="appendOperator('-')">
+                -
+              </button>
+              <!-- Row 3 -->
+              <button onclick="appendNumber('4')">4</button>
+              <button onclick="appendNumber('5')">5</button>
+              <button onclick="appendNumber('6')">6</button>
+              <button class="btn-op green" onclick="appendOperator('+')">
+                +
+              </button>
+              <!-- Row 4 -->
+              <button onclick="appendNumber('1')">1</button>
+              <button onclick="appendNumber('2')">2</button>
+              <button onclick="appendNumber('3')">3</button>
+              <button class="btn-equal" onclick="calculate()">=</button>
+              <!-- Row 5 -->
+              <button onclick="appendOperator('%')">%</button>
+              <button onclick="appendNumber('0')">0</button>
+              <button onclick="appendNumber('.')">.</button>
+            </div>
+          </div>
+
+          <div class="social-icon">
+            <i class="fa-brands fa-facebook-f"></i>
+            <i class="fa-brands fa-linkedin-in"></i>
+            <i class="fa-brands fa-twitter"></i>
+            <i class="fa-brands fa-youtube"></i>
+            <i class="fa-brands fa-tiktok"></i>
+          </div>
+        </div>
+      </div>
+      <div class="hero-right"></div>
+    </section>
+  </body>
+  <script>
+    let num1 = "";
+    let num2 = "";
+    let operador = "";
+    let esperandoNum2 = false;
+
+    const currentDisplay = document.querySelector(".current-operand");
+    const previousDisplay = document.querySelector(".previous-operand");
+
+    function updateDisplay() {
+      currentDisplay.innerText = esperandoNum2 ? num2 || "0" : num1 || "0";
+    }
+
+    function appendNumber(number) {
+      if (esperandoNum2) {
+        if (number === "." && num2.includes(".")) return;
+        num2 += number;
+      } else {
+        if (number === "." && num1.includes(".")) return;
+        num1 += number;
+      }
+      updateDisplay();
+    }
+
+    function appendOperator(op) {
+      if (num1 === "") return;
+      operador = op;
+      esperandoNum2 = true;
+      previousDisplay.innerText = num1 + " " + operador;
+    }
+
+    function clearDisplay() {
+      num1 = "";
+      num2 = "";
+      operador = "";
+      esperandoNum2 = false;
+      previousDisplay.innerText = "";
+      updateDisplay();
+    }
+
+    function deleteLast() {
+      if (esperandoNum2) {
+        num2 = num2.slice(0, -1);
+      } else {
+        num1 = num1.slice(0, -1);
+      }
+      updateDisplay();
+    }
+
+    async function calculate() {
+      if (num1 === "" || num2 === "" || operador === "") return;
+
+      const response = await fetch("calculadora.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ num1: num1, num2: num2, operador: operador }),
+      });
+
+      const data = await response.json();
+      previousDisplay.innerText = num1 + " " + operador + " " + num2 + " =";
+      num1 = data.resultado.toString();
+      num2 = "";
+      operador = "";
+      esperandoNum2 = false;
+      updateDisplay();
+    }
+  </script>
+</html>
